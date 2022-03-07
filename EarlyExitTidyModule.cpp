@@ -41,7 +41,7 @@ namespace bitcoin {
 
     if (return_range.isInvalid()) {
         // Happens (at least) with trailing return types
-        // TODO: detect/work around that
+        // See: https://bugs.llvm.org/show_bug.cgi?id=39567
         diag(decl->getLocation(), "unknown return type");
         return;
     }
