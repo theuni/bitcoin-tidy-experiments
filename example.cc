@@ -8,9 +8,6 @@
 
 #include "example.h"
 
-template <typename T = int>
-struct early_exit_t{};
-
 early_exit_t<int> maybe_early_exit()
 {
     return {};
