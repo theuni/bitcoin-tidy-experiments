@@ -22,7 +22,7 @@ namespace bitcoin {
            qualType(
             hasDeclaration(
              classTemplateSpecializationDecl(
-              hasName("early_exit_t")))).bind("return_type")))))),
+              hasName("early_exit_t"))))))))),
      unless(
       returns(
        qualType(
