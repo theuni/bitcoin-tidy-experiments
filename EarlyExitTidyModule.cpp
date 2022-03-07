@@ -29,13 +29,16 @@ namespace bitcoin {
         hasDeclaration(
          classTemplateSpecializationDecl(
           hasName("early_exit_t"))))))
-     ).bind("has_early_exit"), this);
+     ).bind("func_should_early_exit"), this);
 
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
 
-    const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("has_early_exit");
+    const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit");
+    if (!decl) {
+        return;
+    }
     clang::SourceRange return_range = decl->getReturnTypeSourceRange();
     const auto* canon_decl = decl->getCanonicalDecl();
 
