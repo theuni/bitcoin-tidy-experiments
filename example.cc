@@ -24,5 +24,12 @@ void caller2() // should warn for not returning early_exit_t.
 {
     auto foo = maybe_early_exit();
     auto bar = maybe_early_exit();
-    return;
+    return; // should rewrite as "return {};".
+}
+
+void caller3() // should warn for not returning early_exit_t.
+{
+    auto foo = maybe_early_exit();
+    auto bar = maybe_early_exit();
+    // Should add "return {};"
 }
