@@ -20,6 +20,10 @@ public:
   }
   void registerMatchers(clang::ast_matchers::MatchFinder *Finder) override;
   void check(const clang::ast_matchers::MatchFinder::MatchResult &Result) override;
+private:
+  void recursiveChangeType(const clang::FunctionDecl*, clang::DiagnosticBuilder&);
+  void addReturn(const clang::FunctionDecl*, clang::DiagnosticBuilder&);
+  void updateReturn(const clang::ReturnStmt*, clang::DiagnosticBuilder&);
 };
 
 } // namespace bitcoin
