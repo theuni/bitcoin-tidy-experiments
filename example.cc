@@ -3,31 +3,31 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 // Warn about any function that calls into another function that returns
-// an early_exit_t. The intention is to force _any_ returned early_exit_t to
+// an MaybeEarlyExit. The intention is to force _any_ returned MaybeEarlyExit to
 // bubble all the way back up to main. Like manual exception catch/rethrowing.
 
 #include "example.h"
 
-early_exit_t<int> maybe_early_exit()
+MaybeEarlyExit<int> maybe_early_exit()
 {
     return {};
 }
 
-early_exit_t<> caller()
+MaybeEarlyExit<> caller()
 {
     auto foo = maybe_early_exit();
     auto bar = maybe_early_exit();
     return foo;
 }
 
-void caller2() // should warn for not returning early_exit_t.
+void caller2() // should warn for not returning MaybeEarlyExit.
 {
     auto foo = maybe_early_exit();
     auto bar = maybe_early_exit();
     return; // should rewrite as "return {};".
 }
 
-void caller3() // should warn for not returning early_exit_t.
+void caller3() // should warn for not returning MaybeEarlyExit.
 {
     auto foo = maybe_early_exit();
     auto bar = maybe_early_exit();

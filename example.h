@@ -6,7 +6,7 @@
 #define PROPAGATE_EARLY_EXIT_H
 
 template <typename T = int>
-struct early_exit_t{};
+struct MaybeEarlyExit{};
 
 void caller2();
 

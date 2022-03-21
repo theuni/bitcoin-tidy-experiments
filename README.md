@@ -17,10 +17,10 @@ To install them, build llvm with clang-tools-extra enabled, and:
 
 ```
 1 warning generated.
-/home/cory/dev/bitcoin-tidy/build/../example.cc:26:1: warning: 'caller2' should return early_exit_t. [bitcoin-propagate-early-exit]
-void caller2() // should warn for not returning early_exit_t.
+/home/cory/dev/bitcoin-tidy/build/../example.cc:26:1: warning: 'caller2' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
+void caller2() // should warn for not returning MaybeEarlyExit.
 ^~~~
-early_exit_t<>
+MaybeEarlyExit<>
 /home/cory/dev/bitcoin-tidy/build/../example.cc:26:1: note: FIX-IT applied suggested code changes
 /home/cory/dev/bitcoin-tidy/build/../example.h:8:1: note: FIX-IT applied suggested code changes
 void caller2();

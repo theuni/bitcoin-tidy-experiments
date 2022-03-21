@@ -14,7 +14,7 @@ namespace bitcoin {
 
 
     // Match functions which call into at least one function return
-    // early_exit_t but which do not themselves return early_exit_t.
+    // MaybeEarlyExit but which do not themselves return MaybeEarlyExit.
     Finder->addMatcher(
      functionDecl(
       hasDescendant(
@@ -25,20 +25,20 @@ namespace bitcoin {
            qualType(
             hasDeclaration(
              classTemplateSpecializationDecl(
-              hasName("early_exit_t"))))))))),
+              hasName("MaybeEarlyExit"))))))))),
      unless(
       returns(
        qualType(
         hasDeclaration(
          classTemplateSpecializationDecl(
-          hasName("early_exit_t")))))),
+          hasName("MaybeEarlyExit")))))),
      hasDescendant(
       returnStmt())
      ).bind("func_should_early_exit"), this);
 
 
     // Match bare "return;" statements in a functions that should now
-    // return early_exit_t.
+    // return MaybeEarlyExit.
     Finder->addMatcher(
      returnStmt(
       hasAncestor(
@@ -51,13 +51,13 @@ namespace bitcoin {
              qualType(
               hasDeclaration(
                classTemplateSpecializationDecl(
-                hasName("early_exit_t"))))))))))),
+                hasName("MaybeEarlyExit"))))))))))),
       unless(
        has(
         expr()))).bind("naked_return"), this);
 
     // Match for functions with no return statement that now need to return
-    // early_exit_t.
+    // MaybeEarlyExit.
     Finder->addMatcher(
      functionDecl(
       hasDescendant(
@@ -67,13 +67,13 @@ namespace bitcoin {
           qualType(
            hasDeclaration(
             classTemplateSpecializationDecl(
-             hasName("early_exit_t"))))))))),
+             hasName("MaybeEarlyExit"))))))))),
       unless(
        returns(
         qualType(
          hasDeclaration(
           classTemplateSpecializationDecl(
-           hasName("early_exit_t")))))),
+           hasName("MaybeEarlyExit")))))),
       unless(
        hasDescendant(
         returnStmt()))
@@ -85,12 +85,12 @@ namespace bitcoin {
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit")) {
-        auto user_diag = diag(decl->getBeginLoc(), "%0 should return early_exit_t.") << decl;
+        auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit.") << decl;
         recursiveChangeType(decl, user_diag);
     }
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit_noreturn"))
     {
-        auto user_diag = diag(decl->getBeginLoc(), "%0 should return early_exit_t.") << decl;
+        auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit.") << decl;
         recursiveChangeType(decl, user_diag);
         addReturn(decl, user_diag);
     }
@@ -123,12 +123,12 @@ namespace bitcoin {
         return;
     }
 
-    user_diag << clang::FixItHint::CreateReplacement(return_range, (llvm::Twine("early_exit_t<") + retstring + ">").str());
+    user_diag << clang::FixItHint::CreateReplacement(return_range, (llvm::Twine("MaybeEarlyExit<") + retstring + ">").str());
 
     //TODO: This is very naive. Need to replace all occurances, not just canonical.
     if (canon_decl != decl) {
         clang::SourceRange canon_return_range = canon_decl->getReturnTypeSourceRange();
-        user_diag << clang::FixItHint::CreateReplacement(canon_return_range, (llvm::Twine("early_exit_t<") + retstring + ">").str());
+        user_diag << clang::FixItHint::CreateReplacement(canon_return_range, (llvm::Twine("MaybeEarlyExit<") + retstring + ">").str());
     }
     return;
   }
