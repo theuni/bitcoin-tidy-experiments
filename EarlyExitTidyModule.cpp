@@ -112,10 +112,14 @@ namespace bitcoin {
         return;
     }
 
-    auto rettype = decl->getReturnType();
+    const auto& ctx = decl->getASTContext();
+    const auto& opts = ctx.getLangOpts();
+    clang::PrintingPolicy Policy(opts);
+    auto rettype = decl->getDeclaredReturnType();
+
     std::string retstring;
     if (!rettype->isVoidType()) {
-        retstring = rettype.getAsString();
+        retstring = rettype.getAsString(Policy);
     }
 
     auto loc = decl->getBeginLoc();
