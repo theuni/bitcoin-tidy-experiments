@@ -80,6 +80,17 @@ namespace bitcoin {
      ).bind("func_should_early_exit_noreturn"), this);
 
 
+    Finder->addMatcher(
+     callExpr(
+      callee(
+       functionDecl(
+        returns(
+         qualType(
+          hasDeclaration(
+           classTemplateSpecializationDecl(
+            hasName("MaybeEarlyExit")))))))
+     ).bind("early_exit_call"), this);
+
   }
 
 
@@ -98,6 +109,12 @@ namespace bitcoin {
     {
         auto user_diag = diag(stmt->getBeginLoc(), "Should return something.");
         updateReturn(stmt, user_diag);
+    }
+    if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("early_exit_call"))
+    {
+        // TODO: Maybe filter more?
+        // TODO: "if (early_exit_call() == foo)"    -> "if (*early_exit_call() == foo)"
+        // TODO: "auto foo = early_exit_call().bar" -> "auto foo = early_exit_call()->bar"
     }
   }
 
