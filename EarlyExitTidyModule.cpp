@@ -96,11 +96,17 @@ namespace bitcoin {
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit")) {
+        if (decl->isMain()) {
+            return;
+        }
         auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit.") << decl;
         recursiveChangeType(decl, user_diag);
     }
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit_noreturn"))
     {
+        if (decl->isMain()) {
+            return;
+        }
         auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit.") << decl;
         recursiveChangeType(decl, user_diag);
         addReturn(decl, user_diag);
