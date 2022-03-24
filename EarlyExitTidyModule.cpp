@@ -32,8 +32,10 @@ namespace bitcoin {
         hasDeclaration(
          classTemplateSpecializationDecl(
           hasName("MaybeEarlyExit")))))),
-     hasDescendant(
-      returnStmt())
+     has(
+      compoundStmt(
+       hasAnySubstatement(
+        returnStmt())))
      ).bind("func_should_early_exit"), this);
 
 
@@ -75,8 +77,10 @@ namespace bitcoin {
           classTemplateSpecializationDecl(
            hasName("MaybeEarlyExit")))))),
       unless(
-       hasDescendant(
-        returnStmt()))
+       has(
+        compoundStmt(
+         hasAnySubstatement(
+          returnStmt()))))
      ).bind("func_should_early_exit_noreturn"), this);
 
 
@@ -107,7 +111,7 @@ namespace bitcoin {
         if (decl->isMain()) {
             return;
         }
-        auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit.") << decl;
+        auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit and now needs return statement.") << decl;
         recursiveChangeType(decl, user_diag);
         addReturn(decl, user_diag);
     }
