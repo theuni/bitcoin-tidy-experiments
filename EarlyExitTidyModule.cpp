@@ -99,6 +99,7 @@ namespace bitcoin {
 
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
+    const auto& sm = *Result.SourceManager;
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit")) {
         if (decl->isMain()) {
             return;
@@ -113,7 +114,7 @@ namespace bitcoin {
         }
         auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit and now needs return statement.") << decl;
         recursiveChangeType(decl, user_diag);
-        addReturn(decl, user_diag);
+        addReturn(decl, user_diag, sm);
     }
     if (const auto* stmt = Result.Nodes.getNodeAs<clang::ReturnStmt>("naked_return"))
     {
@@ -171,10 +172,19 @@ namespace bitcoin {
     return;
   }
 
-  void PropagateEarlyExitCheck::addReturn(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag)
+  void PropagateEarlyExitCheck::addReturn(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag, const clang::SourceManager &sm)
   {
     const auto* body = decl->getBody();
-    user_diag << clang::FixItHint::CreateInsertion(body->getEndLoc(), "return {};\n");
+    const clang::Stmt* laststmt;
+    // Attempt to align the return to the column of the previous statement
+    for (auto child = body->child_begin(); child != body->child_end(); child++)
+    {
+        laststmt = *child;
+    }
+    const auto& prevbegin = laststmt->getBeginLoc();
+    auto indentlevel = sm.getPresumedColumnNumber(prevbegin) - 1;
+
+    user_diag << clang::FixItHint::CreateInsertion(body->getEndLoc(), std::string(indentlevel, ' ') + "return {};\n");
   }
 
   void PropagateEarlyExitCheck::updateReturn(const clang::ReturnStmt* stmt, clang::DiagnosticBuilder& user_diag)
