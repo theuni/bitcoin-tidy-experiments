@@ -143,12 +143,12 @@ namespace bitcoin {
 
   void PropagateEarlyExitCheck::recursiveChangeType(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag)
   {
-    clang::SourceRange return_range = decl->getReturnTypeSourceRange();
+    const auto& return_loc = decl->getTypeSourceInfo()->getTypeLoc().getAs<clang::FunctionTypeLoc>().getReturnLoc();
+    clang::SourceRange return_range{return_loc.getBeginLoc(), return_loc.getEndLoc()};
+
     const auto* canon_decl = decl->getCanonicalDecl();
 
     if (return_range.isInvalid()) {
-        // Happens (at least) with trailing return types
-        // See: https://bugs.llvm.org/show_bug.cgi?id=39567
         return;
     }
 
