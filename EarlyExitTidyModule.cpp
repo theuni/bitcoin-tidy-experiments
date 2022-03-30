@@ -167,14 +167,6 @@ namespace bitcoin {
         return;
     }
 
-    clang::SourceLocation attrib_loc;
-    if (canon_decl != decl) {
-        attrib_loc = canon_decl->getInnerLocStart();
-    } else {
-        attrib_loc = decl->getInnerLocStart();
-    }
-    user_diag << clang::FixItHint::CreateInsertion(attrib_loc, "[[nodiscard]] ");
-
     user_diag << clang::FixItHint::CreateReplacement(return_range, (llvm::Twine("MaybeEarlyExit<") + retstring + ">").str());
     //TODO: This is very naive. Need to replace all occurances, not just canonical.
     if (canon_decl != decl) {
