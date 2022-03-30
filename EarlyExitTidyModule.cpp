@@ -32,6 +32,12 @@ namespace bitcoin {
         hasDeclaration(
          classTemplateSpecializationDecl(
           hasName("MaybeEarlyExit")))))),
+     unless(
+      returns(
+       qualType(
+        hasDeclaration(
+         cxxRecordDecl(
+          hasName("RPCHelpMan")))))),
      has(
       compoundStmt(
        hasAnySubstatement(
@@ -76,6 +82,12 @@ namespace bitcoin {
          hasDeclaration(
           classTemplateSpecializationDecl(
            hasName("MaybeEarlyExit")))))),
+     unless(
+      returns(
+       qualType(
+        hasDeclaration(
+         cxxRecordDecl(
+          hasName("RPCHelpMan")))))),
       unless(
        has(
         compoundStmt(
