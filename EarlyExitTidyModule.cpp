@@ -179,6 +179,7 @@ namespace bitcoin {
   void PropagateEarlyExitCheck::addReturn(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag, const clang::SourceManager &sm)
   {
     const auto* body = decl->getBody();
+    if (!body) return;
     const clang::Stmt* laststmt;
     // Attempt to align the return to the column of the previous statement
     for (auto child = body->child_begin(); child != body->child_end(); child++)
