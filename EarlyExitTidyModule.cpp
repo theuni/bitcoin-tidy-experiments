@@ -49,7 +49,7 @@ namespace bitcoin {
     // return MaybeEarlyExit.
     Finder->addMatcher(
      returnStmt(
-      hasAncestor(
+      forCallable(
        functionDecl(
         hasDescendant(
          callExpr(
