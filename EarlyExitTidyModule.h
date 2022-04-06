@@ -22,7 +22,7 @@ public:
   void check(const clang::ast_matchers::MatchFinder::MatchResult &Result) override;
 private:
   void recursiveChangeType(const clang::FunctionDecl*, clang::DiagnosticBuilder&);
-  void addReturn(const clang::FunctionDecl*, clang::DiagnosticBuilder&, const clang::SourceManager&);
+  void addReturn(const clang::Stmt*, clang::DiagnosticBuilder&, const clang::SourceManager&);
   void updateReturn(const clang::ReturnStmt*, clang::DiagnosticBuilder&);
 };
 

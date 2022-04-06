@@ -12,121 +12,35 @@ namespace bitcoin {
   void PropagateEarlyExitCheck::registerMatchers(clang::ast_matchers::MatchFinder *Finder) {
   using namespace clang::ast_matchers;
 
-
-    // Match functions which call into at least one function return
-    // MaybeEarlyExit but which do not themselves return MaybeEarlyExit.
-    Finder->addMatcher(
-     functionDecl(
-      hasDescendant(
-       callExpr(
-        callee(
-         functionDecl(
-          returns(
-           qualType(
-            hasDeclaration(
-             classTemplateSpecializationDecl(
-              hasName("MaybeEarlyExit"))))))))),
-     unless(
-      returns(
-       qualType(
-        hasDeclaration(
-         classTemplateSpecializationDecl(
-          hasName("MaybeEarlyExit")))))),
-     unless(
-      returns(
-       qualType(
-        hasDeclaration(
-         cxxRecordDecl(
-          hasName("RPCHelpMan")))))),
-     has(
-      compoundStmt(
-       hasAnySubstatement(
-        returnStmt())))
-     ).bind("func_should_early_exit"), this);
-
-
-    // Match bare "return;" statements in a functions that should now
-    // return MaybeEarlyExit.
-    Finder->addMatcher(
-     returnStmt(
-      forCallable(
-       functionDecl(
-        hasDescendant(
-         callExpr(
-          callee(
-           functionDecl(
-            returns(
-             qualType(
-              hasDeclaration(
-               classTemplateSpecializationDecl(
-                hasName("MaybeEarlyExit"))))))))))),
-      unless(
-       has(
-        expr()))).bind("naked_return"), this);
-
-    // Match for functions with no return statement that now need to return
-    // MaybeEarlyExit.
-    Finder->addMatcher(
-     functionDecl(
-      hasDescendant(
-       callExpr(callee(
-        functionDecl(
-         returns(
-          qualType(
-           hasDeclaration(
-            classTemplateSpecializationDecl(
-             hasName("MaybeEarlyExit"))))))))),
-      unless(
-       returns(
-        qualType(
-         hasDeclaration(
-          classTemplateSpecializationDecl(
-           hasName("MaybeEarlyExit")))))),
-     unless(
-      returns(
-       qualType(
-        hasDeclaration(
-         cxxRecordDecl(
-          hasName("RPCHelpMan")))))),
-      unless(
-       has(
-        compoundStmt(
-         hasAnySubstatement(
-          returnStmt()))))
-     ).bind("func_should_early_exit_noreturn"), this);
-
-
+    auto matchtype = qualType(hasDeclaration(classTemplateSpecializationDecl(hasName("MaybeEarlyExit"))));
     Finder->addMatcher(
      callExpr(
-      callee(
-       functionDecl(
-        returns(
-         qualType(
-          hasDeclaration(
-           classTemplateSpecializationDecl(
-            hasName("MaybeEarlyExit")))))))
-     ).bind("early_exit_call"), this);
-
+       hasType(matchtype),
+       forCallable(functionDecl(
+         unless(isMain()),
+         unless(returns(matchtype)),
+         optionally(hasBody(compoundStmt(unless(hasAnySubstatement(returnStmt()))).bind("stmt_needs_return"))),
+         optionally(hasDescendant(returnStmt(unless(has(expr()))).bind("naked_return")))
+       ).bind("func_should_early_exit"))
+     ).bind("early_exit_call")
+    , this);
   }
 
-
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
+    static llvm::SmallSet<int64_t, 8> g_decls;
+
     const auto& sm = *Result.SourceManager;
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit")) {
-        if (decl->isMain()) {
+        if(!g_decls.insert(decl->getID()).second) {
             return;
         }
         auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit.") << decl;
         recursiveChangeType(decl, user_diag);
     }
-    if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit_noreturn"))
+    if (const auto *body = Result.Nodes.getNodeAs<clang::Stmt>("stmt_needs_return"))
     {
-        if (decl->isMain()) {
-            return;
-        }
-        auto user_diag = diag(decl->getBeginLoc(), "%0 should return MaybeEarlyExit and now needs return statement.") << decl;
-        recursiveChangeType(decl, user_diag);
-        addReturn(decl, user_diag, sm);
+        auto user_diag = diag(body->getEndLoc(), " now needs return statement.");
+        addReturn(body, user_diag, sm);
     }
     if (const auto* stmt = Result.Nodes.getNodeAs<clang::ReturnStmt>("naked_return"))
     {
@@ -176,10 +90,8 @@ namespace bitcoin {
     return;
   }
 
-  void PropagateEarlyExitCheck::addReturn(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag, const clang::SourceManager &sm)
+  void PropagateEarlyExitCheck::addReturn(const clang::Stmt* body, clang::DiagnosticBuilder& user_diag, const clang::SourceManager &sm)
   {
-    const auto* body = decl->getBody();
-    if (!body) return;
     const clang::Stmt* laststmt;
     // Attempt to align the return to the column of the previous statement
     for (auto child = body->child_begin(); child != body->child_end(); child++)
