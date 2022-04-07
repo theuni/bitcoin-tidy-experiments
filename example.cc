@@ -20,6 +20,8 @@ MaybeEarlyExit<> caller()
     return foo;
 }
 
+void caller2();
+auto caller2() -> void;
 void caller2() // should warn for not returning MaybeEarlyExit.
 {
     auto foo = maybe_early_exit();
