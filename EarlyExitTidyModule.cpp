@@ -24,6 +24,19 @@ namespace bitcoin {
        ).bind("func_should_early_exit"))
      ).bind("early_exit_call")
     , this);
+
+    Finder->addMatcher(
+      ifStmt(hasCondition(expr(
+        hasDescendant(callExpr(hasType(matchtype))),
+        unless(hasDescendant(unaryOperator(hasOperatorName("!"), hasDescendant(callExpr(hasType(matchtype))))))
+      ))
+    ).bind("conditional_early_exit"), this);
+
+    Finder->addMatcher(
+      ifStmt(hasCondition(
+        hasDescendant(unaryOperator(hasOperatorName("!"), hasDescendant(callExpr(hasType(matchtype)))).bind("not_operator"))
+      )
+    ).bind("conditional_not_early_exit"), this);
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
@@ -47,11 +60,32 @@ namespace bitcoin {
         auto user_diag = diag(stmt->getBeginLoc(), "Should return something.");
         updateReturn(stmt, user_diag);
     }
-    if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("early_exit_call"))
+    if (const auto* expr = Result.Nodes.getNodeAs<clang::IfStmt>("conditional_early_exit"))
     {
+        auto beginLoc = expr->getIfLoc();
+        auto endLoc = expr->getLParenLoc();
+        clang::SourceRange range = {beginLoc, endLoc};
+        const auto user_diag = diag(beginLoc, "Adding Macros");
+        user_diag << clang::FixItHint::CreateReplacement(range, "EARLY_EXIT_IF(");
         // TODO: Maybe filter more?
         // TODO: "if (early_exit_call() == foo)"    -> "if (*early_exit_call() == foo)"
         // TODO: "auto foo = early_exit_call().bar" -> "auto foo = early_exit_call()->bar"
+    }
+    if (const auto* expr = Result.Nodes.getNodeAs<clang::UnaryOperator>("not_operator"))
+    {
+        auto beginLoc = expr->getOperatorLoc();
+        auto endLoc = expr->getExprLoc();
+        clang::SourceRange range = {beginLoc, endLoc};
+        const auto user_diag = diag(beginLoc, "Adding Macros");
+        user_diag << clang::FixItHint::CreateRemoval(range);
+    }
+    if (const auto* expr = Result.Nodes.getNodeAs<clang::IfStmt>("conditional_not_early_exit"))
+    {
+        auto beginLoc = expr->getIfLoc();
+        auto endLoc = expr->getLParenLoc();
+        clang::SourceRange range = {beginLoc, endLoc};
+        const auto user_diag = diag(beginLoc, "Adding Macros");
+        user_diag << clang::FixItHint::CreateReplacement(range, "EARLY_EXIT_IF_NOT(");
     }
   }
 
