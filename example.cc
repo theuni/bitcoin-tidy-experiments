@@ -34,5 +34,20 @@ void caller3() // should warn for not returning MaybeEarlyExit.
     if (1) {
         return; // should rewrite as "return {};"
     }
+    class fooclass{
+        void myfunc() { return; }
+    };
     // Should add "return {};"
+}
+
+MaybeEarlyExit<> func(int arg)
+{
+    return {};
+}
+
+void caller4()
+{
+    using functype = MaybeEarlyExit<>(*)(int);
+    functype fpointer = func;
+    auto foo = fpointer(1);
 }
