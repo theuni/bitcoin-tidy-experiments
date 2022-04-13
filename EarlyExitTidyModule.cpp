@@ -37,6 +37,18 @@ namespace bitcoin {
         hasDescendant(unaryOperator(hasOperatorName("!"), hasDescendant(callExpr(hasType(matchtype)))).bind("not_operator"))
       )
     ).bind("conditional_not_early_exit"), this);
+
+    Finder->addMatcher(
+      binaryOperator(
+        isAssignmentOperator(),
+        has(declRefExpr().bind("decl")),
+        hasDescendant(callExpr(hasType(matchtype)).bind("call"))
+    ).bind("early_exit_assignment"), this);
+
+    Finder->addMatcher(
+      varDecl(hasType(matchtype)
+    ).bind("early_exit_declaration"), this);
+
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
