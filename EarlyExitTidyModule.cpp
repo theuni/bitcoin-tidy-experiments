@@ -66,7 +66,7 @@ namespace bitcoin {
         auto endLoc = expr->getLParenLoc();
         clang::SourceRange range = {beginLoc, endLoc};
         const auto user_diag = diag(beginLoc, "Adding Macros");
-        user_diag << clang::FixItHint::CreateReplacement(range, "EARLY_EXIT_IF(");
+        user_diag << clang::FixItHint::CreateReplacement(range, "EXIT_OR_IF(");
         // TODO: Maybe filter more?
         // TODO: "if (early_exit_call() == foo)"    -> "if (*early_exit_call() == foo)"
         // TODO: "auto foo = early_exit_call().bar" -> "auto foo = early_exit_call()->bar"
@@ -85,7 +85,7 @@ namespace bitcoin {
         auto endLoc = expr->getLParenLoc();
         clang::SourceRange range = {beginLoc, endLoc};
         const auto user_diag = diag(beginLoc, "Adding Macros");
-        user_diag << clang::FixItHint::CreateReplacement(range, "EARLY_EXIT_IF_NOT(");
+        user_diag << clang::FixItHint::CreateReplacement(range, "EXIT_OR_IF_NOT(");
     }
   }
 

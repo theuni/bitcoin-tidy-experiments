@@ -5,8 +5,7 @@
 #ifndef PROPAGATE_EARLY_EXIT_H
 #define PROPAGATE_EARLY_EXIT_H
 
-template <typename T = int>
-struct MaybeEarlyExit{};
+#include "early_exit.h"
 
 void caller2();
 
