@@ -99,6 +99,18 @@ namespace bitcoin {
         const auto user_diag = diag(beginLoc, "Adding Macros");
         user_diag << clang::FixItHint::CreateReplacement(range, "EXIT_OR_IF_NOT(");
     }
+    if (const auto* bin = Result.Nodes.getNodeAs<clang::BinaryOperator>("early_exit_assignment"))
+    {
+        const auto user_diag = diag(bin->getBeginLoc(), "Adding Macros");
+        user_diag << clang::FixItHint::CreateInsertion(bin->getBeginLoc(), "EXIT_OR_ASSIGN(");
+
+        const auto& beginLoc = bin->getOperatorLoc();
+        const auto& endLoc = bin->getExprLoc();
+        clang::SourceRange range = {beginLoc, endLoc};
+        user_diag << clang::FixItHint::CreateReplacement(range, ",");
+
+        user_diag << clang::FixItHint::CreateInsertion(bin->getEndLoc(), ")");
+    }
   }
 
   void PropagateEarlyExitCheck::recursiveChangeType(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag)
