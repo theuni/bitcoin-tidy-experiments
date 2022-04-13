@@ -32,8 +32,10 @@ void caller2() // should warn for not returning MaybeEarlyExit.
 void caller3() // should warn for not returning MaybeEarlyExit.
 {
     auto foo = maybe_early_exit();
-    auto bar = maybe_early_exit();
-    if (1) {
+    if (maybe_early_exit()) {
+        return; // should rewrite as "return {};"
+    }
+    if (!maybe_early_exit()) {
         return; // should rewrite as "return {};"
     }
     class fooclass{
