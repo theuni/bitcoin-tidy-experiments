@@ -1,0 +1,1 @@
+l matchtype qualType(hasDeclaration(classTemplateSpecializationDecl(hasName("MaybeEarlyExit"))))
