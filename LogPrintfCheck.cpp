@@ -10,10 +10,21 @@
 
 namespace {
 AST_MATCHER(clang::StringLiteral, unterminated) {
-    if (size_t len = Node.getLength(); len > 0 && Node.getCodeUnit(len-1) != '\n') {
-        return true;
+    size_t len = Node.getLength();
+    if(len == 0) {
+        return false;
     }
-  return false;
+    if(Node.getCodeUnit(len-1) == '\n') {
+        return false;
+    }
+    if (len > 2 &&
+        Node.getCodeUnit(len-1) == '.' &&
+        Node.getCodeUnit(len-2) == '.' &&
+        Node.getCodeUnit(len-3) == '.')
+    {
+        return false;
+    }
+    return true;
 }
 } // namespace
 

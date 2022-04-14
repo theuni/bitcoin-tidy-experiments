@@ -23,7 +23,15 @@ void good_func()
 {
     LogPrintf("hello world!\n");
 }
+void good_func2()
+{
+    LogPrintf("hello world!...");
+}
 void bad_func()
 {
     LogPrintf("hello world!");
+}
+void bad_func2()
+{
+    LogPrintf("hello world!..");
 }
