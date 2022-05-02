@@ -55,5 +55,5 @@ void caller4()
 {
     using functype = MaybeEarlyExit<>(*)(int);
     functype fpointer = func;
-    auto foo = fpointer(1);
+    const auto& foo = fpointer(1);
 }
