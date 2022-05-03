@@ -6,6 +6,19 @@
 
 #include <clang/AST/ASTContext.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
+#include <clang/Lex/Lexer.h>
+
+namespace {
+
+static llvm::StringRef get_source_text(clang::SourceRange range, const clang::SourceManager& sm, const clang::LangOptions& lo) {
+    // Mostly from https://stackoverflow.com/questions/11083066/getting-the-source-behind-clangs-ast
+    const auto& start_loc = sm.getSpellingLoc(range.getBegin());
+    const auto& last_token_loc = sm.getSpellingLoc(range.getEnd());
+    const auto& end_loc = clang::Lexer::getLocForEndOfToken(last_token_loc, 0, sm, lo);
+    const auto& char_range = clang::CharSourceRange::getCharRange({start_loc, end_loc});
+    return clang::Lexer::getSourceText(char_range, sm, lo);
+}
+} // anonymous namespace
 
 namespace bitcoin {
 
@@ -45,9 +58,11 @@ namespace bitcoin {
         hasDescendant(callExpr(hasType(matchtype)).bind("call"))
     ).bind("early_exit_assignment"), this);
 
-    Finder->addMatcher(
-      varDecl(hasType(matchtype)
-    ).bind("early_exit_declaration"), this);
+    Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
+      declStmt(has(varDecl(
+        has(callExpr(hasType(matchtype)).bind("callsite"))).bind("vardecl")
+      ))
+    .bind("declstmt")), this);
 
   }
 
@@ -110,6 +125,29 @@ namespace bitcoin {
         user_diag << clang::FixItHint::CreateReplacement(range, ",");
 
         user_diag << clang::FixItHint::CreateInsertion(bin->getEndLoc(), ")");
+    }
+    if (const auto* decl = Result.Nodes.getNodeAs<clang::VarDecl>("vardecl"))
+    {
+        if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("callsite")) {
+            const auto& ctx = decl->getASTContext();
+            const auto& opts = ctx.getLangOpts();
+            const auto user_diag = diag(decl->getBeginLoc(), "Adding Macros");
+            std::string result = "EXIT_OR_DECL(";
+            {
+                clang::SourceRange typerange = {decl->getBeginLoc(), decl->getTypeSpecEndLoc()};
+                result += get_source_text(typerange, sm, opts);
+            }
+            result += " ";
+            result += decl->getQualifiedNameAsString();
+            result += ", ";
+            result += get_source_text(expr->getSourceRange(), sm, opts);
+            result += ");";
+            if (const auto* stmt = Result.Nodes.getNodeAs<clang::DeclStmt>("declstmt")) {
+                assert(stmt->isSingleDecl());
+                const auto* singledecl = stmt->getSingleDecl();
+                user_diag << clang::FixItHint::CreateReplacement(singledecl->getSourceRange(), result);
+            }
+        }
     }
   }
 
