@@ -4,6 +4,7 @@
 
 #include "EarlyExitTidyModule.h"
 #include "LogPrintfCheck.h"
+#include "NoADLCheck.h"
 
 #include <clang-tidy/ClangTidyModule.h>
 #include <clang-tidy/ClangTidyModuleRegistry.h>
@@ -13,6 +14,7 @@ public:
   void addCheckFactories(clang::tidy::ClangTidyCheckFactories &CheckFactories) override {
     CheckFactories.registerCheck<bitcoin::PropagateEarlyExitCheck>("bitcoin-propagate-early-exit");
     CheckFactories.registerCheck<bitcoin::LogPrintfCheck>("bitcoin-unterminated-logprintf");
+    CheckFactories.registerCheck<bitcoin::NoADLCheck>("bitcoin-adl-use");
   }
 };
 

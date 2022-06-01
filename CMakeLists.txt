@@ -11,6 +11,6 @@ set(CMAKE_CXX_EXTENSIONS False)
 add_compile_options(-fno-rtti)
 add_compile_options(-fno-exceptions)
 
-add_library(bitcoin-tidy SHARED bitcoin-tidy.cpp EarlyExitTidyModule.cpp LogPrintfCheck.cpp)
+add_library(bitcoin-tidy SHARED bitcoin-tidy.cpp EarlyExitTidyModule.cpp LogPrintfCheck.cpp NoADLCheck.cpp)
 
 install(TARGETS bitcoin-tidy LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
