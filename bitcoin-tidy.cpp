@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "EarlyExitTidyModule.h"
+#include "ExportMainCheck.h"
 #include "LogPrintfCheck.h"
 #include "NoADLCheck.h"
 
@@ -15,6 +16,7 @@ public:
     CheckFactories.registerCheck<bitcoin::PropagateEarlyExitCheck>("bitcoin-propagate-early-exit");
     CheckFactories.registerCheck<bitcoin::LogPrintfCheck>("bitcoin-unterminated-logprintf");
     CheckFactories.registerCheck<bitcoin::NoADLCheck>("bitcoin-adl-use");
+    CheckFactories.registerCheck<bitcoin::ExportMainCheck>("bitcoin-export-main");
   }
 };
 
