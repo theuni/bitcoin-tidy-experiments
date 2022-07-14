@@ -57,3 +57,7 @@ void caller4()
     functype fpointer = func;
     const auto& foo = fpointer(1);
 }
+void caller5()
+{
+    maybe_early_exit();
+}
