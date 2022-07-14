@@ -73,7 +73,7 @@ namespace bitcoin {
 
     Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
       declStmt(has(varDecl(
-        has(callExpr(hasType(matchtype)).bind("callsite"))).bind("vardecl")
+        hasInitializer(callExpr(hasType(matchtype)).bind("callsite"))).bind("vardecl")
       ))
     .bind("declstmt")), this);
 
