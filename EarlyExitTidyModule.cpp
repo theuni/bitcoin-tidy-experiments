@@ -139,29 +139,29 @@ namespace bitcoin {
 
         user_diag << clang::FixItHint::CreateInsertion(bin->getEndLoc(), ")");
     }
-    if (const auto* decl = Result.Nodes.getNodeAs<clang::VarDecl>("vardecl"))
+
+    if (const auto* decl = Result.Nodes.getNodeAs<clang::DeclStmt>("declstmt"))
     {
-        if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("callsite")) {
-            const auto& ctx = decl->getASTContext();
-            const auto& opts = ctx.getLangOpts();
+        if (const auto* var = Result.Nodes.getNodeAs<clang::VarDecl>("vardecl")) {
             const auto user_diag = diag(decl->getBeginLoc(), "Adding Macros");
+
             std::string result = "EXIT_OR_DECL(";
-            {
-                clang::SourceRange typerange = {decl->getBeginLoc(), decl->getTypeSpecEndLoc()};
+            const auto& ctx = var->getASTContext();
+            const auto& opts = ctx.getLangOpts();
+            clang::SourceRange typerange = {var->getBeginLoc(), var->getTypeSpecEndLoc()};
+            result += get_source_text(typerange, sm, opts);
+            result += " ";
+            result += var->getQualifiedNameAsString();
+            result += ", ";
+            if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("callsite")) {
+                clang::SourceRange typerange = {expr->getBeginLoc(), expr->getEndLoc()};
                 result += get_source_text(typerange, sm, opts);
             }
-            result += " ";
-            result += decl->getQualifiedNameAsString();
-            result += ", ";
-            result += get_source_text(expr->getSourceRange(), sm, opts);
             result += ");";
-            if (const auto* stmt = Result.Nodes.getNodeAs<clang::DeclStmt>("declstmt")) {
-                assert(stmt->isSingleDecl());
-                const auto* singledecl = stmt->getSingleDecl();
-                user_diag << clang::FixItHint::CreateReplacement(singledecl->getSourceRange(), result);
-            }
+            user_diag << clang::FixItHint::CreateReplacement(decl->getSourceRange(), result);
         }
     }
+
   }
 
   void PropagateEarlyExitCheck::recursiveChangeType(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag)
