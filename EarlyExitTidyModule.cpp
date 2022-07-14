@@ -32,11 +32,24 @@ namespace bitcoin {
        forCallable(functionDecl(
          unless(isMain()),
          unless(returns(matchtype)),
-         optionally(hasBody(compoundStmt(unless(hasAnySubstatement(returnStmt()))).bind("stmt_needs_return"))),
-         optionally(hasDescendant(returnStmt(unless(has(expr()))).bind("naked_return")))
+         optionally(hasBody(compoundStmt(unless(hasAnySubstatement(returnStmt()))).bind("stmt_needs_return")))
        ).bind("func_should_early_exit"))
      ).bind("early_exit_call")
     , this);
+
+
+    // Match bare "return;" statements in a functions that should now
+    // return MaybeEarlyExit.
+    Finder->addMatcher(
+     returnStmt(
+      forCallable(
+       functionDecl(
+        hasDescendant(
+         callExpr(
+          hasType(matchtype))))),
+      unless(
+       has(
+        expr()))).bind("naked_return"), this);
 
     Finder->addMatcher(
       ifStmt(hasCondition(expr(
