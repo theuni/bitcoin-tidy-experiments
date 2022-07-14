@@ -72,8 +72,14 @@ namespace bitcoin {
     ).bind("early_exit_assignment"), this);
 
     Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
-      declStmt(has(varDecl(
-        hasInitializer(callExpr(hasType(matchtype)).bind("callsite"))).bind("vardecl")
+      declStmt(
+        unless(isExpandedFromMacro("MAYBE_EXIT")),
+        unless(isExpandedFromMacro("EXIT_OR_DECL")),
+        unless(isExpandedFromMacro("EXIT_OR_ASSIGN")),
+        unless(isExpandedFromMacro("EXIT_OR_IF")),
+        unless(isExpandedFromMacro("EXIT_OR_IF_NOT")),
+        has(varDecl(
+          hasInitializer(callExpr(hasType(matchtype)).bind("callsite"))).bind("vardecl")
       ))
     .bind("declstmt")), this);
 
