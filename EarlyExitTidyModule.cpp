@@ -83,6 +83,13 @@ namespace bitcoin {
       ))
     .bind("declstmt")), this);
 
+    Finder->addMatcher(
+        callExpr(hasType(matchtype),
+        unless(hasAncestor(binaryOperator())),
+        unless(hasAncestor(declStmt())),
+        unless(hasAncestor(ifStmt()))
+    ).bind("unused_early_exit"), this);
+
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
@@ -168,6 +175,12 @@ namespace bitcoin {
         }
     }
 
+    if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("unused_early_exit"))
+    {
+        const auto user_diag = diag(expr->getBeginLoc(), "Adding Macros");
+        user_diag << clang::FixItHint::CreateInsertion(expr->getBeginLoc(), "MAYBE_EXIT(");
+        user_diag << clang::FixItHint::CreateInsertion(expr->getEndLoc(), ")");
+    }
   }
 
   void PropagateEarlyExitCheck::recursiveChangeType(const clang::FunctionDecl* decl, clang::DiagnosticBuilder& user_diag)
