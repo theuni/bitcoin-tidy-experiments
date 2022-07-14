@@ -25,7 +25,7 @@ auto caller2() -> void;
 void caller2() // should warn for not returning MaybeEarlyExit.
 {
     auto foo(maybe_early_exit());
-    auto bar = maybe_early_exit();
+    const auto& bar = maybe_early_exit();
     int castret{0};
     castret = maybe_early_exit();
     return; // should rewrite as "return {};".
