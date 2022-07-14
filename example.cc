@@ -17,7 +17,7 @@ MaybeEarlyExit<> caller()
 {
     auto foo = maybe_early_exit();
     auto bar = maybe_early_exit();
-    return BubbleUp(std::move(foo));
+    return {};
 }
 
 void caller2();
