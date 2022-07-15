@@ -16,7 +16,12 @@ MaybeEarlyExit<int> maybe_early_exit()
 MaybeEarlyExit<> caller()
 {
     auto foo = maybe_early_exit();
-    auto bar = maybe_early_exit();
+
+    struct quickstruct {
+        int m_val{0};
+    };
+    quickstruct tempstruct;
+    tempstruct.m_val = maybe_early_exit();
     return {};
 }
 
