@@ -67,8 +67,7 @@ namespace bitcoin {
     Finder->addMatcher(
       binaryOperator(
         isAssignmentOperator(),
-        has(declRefExpr().bind("decl")),
-        hasDescendant(callExpr(hasType(matchtype)).bind("call"))
+        hasRHS(hasDescendant(callExpr(hasType(matchtype))))
     ).bind("early_exit_assignment"), this);
 
     Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
