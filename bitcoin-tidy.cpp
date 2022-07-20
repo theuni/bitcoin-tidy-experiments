@@ -4,6 +4,7 @@
 
 #include "EarlyExitTidyModule.h"
 #include "ExportMainCheck.h"
+#include "InitListCheck.h"
 #include "LogPrintfCheck.h"
 #include "NoADLCheck.h"
 
@@ -17,6 +18,7 @@ public:
     CheckFactories.registerCheck<bitcoin::LogPrintfCheck>("bitcoin-unterminated-logprintf");
     CheckFactories.registerCheck<bitcoin::NoADLCheck>("bitcoin-adl-use");
     CheckFactories.registerCheck<bitcoin::ExportMainCheck>("bitcoin-export-main");
+    CheckFactories.registerCheck<bitcoin::InitListCheck>("bitcoin-init-list");
   }
 };
 
