@@ -20,131 +20,131 @@ To install them, build llvm with clang-tools-extra enabled, and:
 
 Example propagate-early-exit usage:
 
-``clang-tidy --load=`pwd`/libbitcoin-tidy.so -checks='-*,bitcoin-propagate-early-exit' -fix ../example.cc -- -std=c++17``
+``clang-tidy --load=`pwd`/libbitcoin-tidy-experiments.so -checks='-*,bitcoin-propagate-early-exit' -fix ../example.cc -- -std=c++17``
 
 ```
 25 warnings generated.
-/home/cory/dev/bitcoin-tidy/build/../example.cc:18:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:18:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     auto foo = maybe_early_exit();
     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXIT_OR_DECL(auto foo, maybe_early_exit());
-/home/cory/dev/bitcoin-tidy/build/../example.cc:18:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:19:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:18:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:19:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     auto bar = maybe_early_exit();
     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXIT_OR_DECL(auto bar, maybe_early_exit());
-/home/cory/dev/bitcoin-tidy/build/../example.cc:19:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:25:1: warning: 'caller2' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:19:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:25:1: warning: 'caller2' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
 void caller2() // should warn for not returning MaybeEarlyExit.
 ^~~~
 MaybeEarlyExit<>
-/home/cory/dev/bitcoin-tidy/build/../example.cc:23:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:23:1: note: FIX-IT applied suggested code changes
 void caller2();
 ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:24:19: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:24:19: note: FIX-IT applied suggested code changes
 auto caller2() -> void;
                   ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:25:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:25:1: note: FIX-IT applied suggested code changes
 void caller2() // should warn for not returning MaybeEarlyExit.
 ^
-/home/cory/dev/bitcoin-tidy/build/../example.h:10:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.h:10:1: note: FIX-IT applied suggested code changes
 void caller2();
 ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:27:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:27:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     auto foo(maybe_early_exit());
     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXIT_OR_DECL(auto foo, maybe_early_exit());
-/home/cory/dev/bitcoin-tidy/build/../example.cc:27:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:28:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:27:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:28:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     const auto& bar = maybe_early_exit();
     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXIT_OR_DECL(const auto& bar, maybe_early_exit());
-/home/cory/dev/bitcoin-tidy/build/../example.cc:28:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:30:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:28:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:30:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     castret = maybe_early_exit();
     ^       ~
     EXIT_OR_ASSIGN( ,          )
-/home/cory/dev/bitcoin-tidy/build/../example.cc:30:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:30:13: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:30:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:30:13: note: FIX-IT applied suggested code changes
     castret = maybe_early_exit();
             ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:30:32: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:30:32: note: FIX-IT applied suggested code changes
     castret = maybe_early_exit();
                                ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:31:5: warning: Should return something. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:31:5: warning: Should return something. [bitcoin-propagate-early-exit]
     return; // should rewrite as "return {};".
     ^~~~~~
     return {}
-/home/cory/dev/bitcoin-tidy/build/../example.cc:31:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:34:1: warning: 'caller3' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:31:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:34:1: warning: 'caller3' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
 void caller3() // should warn for not returning MaybeEarlyExit.
 ^~~~
 MaybeEarlyExit<>
-/home/cory/dev/bitcoin-tidy/build/../example.cc:34:1: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:36:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:34:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:36:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     auto foo = maybe_early_exit();
     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXIT_OR_DECL(auto foo, maybe_early_exit());
-/home/cory/dev/bitcoin-tidy/build/../example.cc:36:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:37:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:36:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:37:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     if (maybe_early_exit()) {
     ^~~~
     EXIT_OR_IF(
-/home/cory/dev/bitcoin-tidy/build/../example.cc:37:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:38:9: warning: Should return something. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:37:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:38:9: warning: Should return something. [bitcoin-propagate-early-exit]
         return; // should rewrite as "return {};"
         ^~~~~~
         return {}
-/home/cory/dev/bitcoin-tidy/build/../example.cc:38:9: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:40:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:38:9: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:40:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     if (!maybe_early_exit()) {
     ^~~~
     EXIT_OR_IF_NOT(
-/home/cory/dev/bitcoin-tidy/build/../example.cc:40:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:40:9: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:40:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:40:9: warning: Adding Macros [bitcoin-propagate-early-exit]
     if (!maybe_early_exit()) {
         ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:40:9: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:41:9: warning: Should return something. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:40:9: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:41:9: warning: Should return something. [bitcoin-propagate-early-exit]
         return; // should rewrite as "return {};"
         ^~~~~~
         return {}
-/home/cory/dev/bitcoin-tidy/build/../example.cc:41:9: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:47:1: warning:  now needs return statement. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:41:9: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:47:1: warning:  now needs return statement. [bitcoin-propagate-early-exit]
 }
 ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:47:1: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:54:1: warning: 'caller4' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:47:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:54:1: warning: 'caller4' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
 void caller4()
 ^~~~
 MaybeEarlyExit<>
-/home/cory/dev/bitcoin-tidy/build/../example.cc:54:1: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:58:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:54:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:58:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     const auto& foo = fpointer(1);
     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     EXIT_OR_DECL(const auto& foo, fpointer(1));
-/home/cory/dev/bitcoin-tidy/build/../example.cc:58:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:59:1: warning:  now needs return statement. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:58:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:59:1: warning:  now needs return statement. [bitcoin-propagate-early-exit]
 }
 ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:59:1: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:60:1: warning: 'caller5' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:59:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:60:1: warning: 'caller5' should return MaybeEarlyExit. [bitcoin-propagate-early-exit]
 void caller5()
 ^~~~
 MaybeEarlyExit<>
-/home/cory/dev/bitcoin-tidy/build/../example.cc:60:1: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:62:5: warning: Adding Macros [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:60:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:62:5: warning: Adding Macros [bitcoin-propagate-early-exit]
     maybe_early_exit();
     ^
     MAYBE_EXIT(      )
-/home/cory/dev/bitcoin-tidy/build/../example.cc:62:5: note: FIX-IT applied suggested code changes
-/home/cory/dev/bitcoin-tidy/build/../example.cc:62:22: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:62:5: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:62:22: note: FIX-IT applied suggested code changes
     maybe_early_exit();
                      ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:63:1: warning:  now needs return statement. [bitcoin-propagate-early-exit]
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:63:1: warning:  now needs return statement. [bitcoin-propagate-early-exit]
 }
 ^
-/home/cory/dev/bitcoin-tidy/build/../example.cc:63:1: note: FIX-IT applied suggested code changes
+/home/cory/dev/bitcoin-tidy-experiments/build/../example.cc:63:1: note: FIX-IT applied suggested code changes
 clang-tidy applied 27 of 27 suggested fixes.
 Suppressed 4 warnings (4 with check filters).
 ```
