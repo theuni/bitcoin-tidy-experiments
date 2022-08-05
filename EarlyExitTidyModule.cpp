@@ -53,21 +53,21 @@ namespace bitcoin {
 
     Finder->addMatcher(
       ifStmt(hasCondition(expr(
-        hasDescendant(callExpr(hasType(matchtype))),
+        hasDescendant(callExpr(hasType(matchtype)).bind("if_call_expr")),
         unless(hasDescendant(unaryOperator(hasOperatorName("!"), hasDescendant(callExpr(hasType(matchtype))))))
       ))
     ).bind("conditional_early_exit"), this);
 
     Finder->addMatcher(
       ifStmt(hasCondition(
-        hasDescendant(unaryOperator(hasOperatorName("!"), hasDescendant(callExpr(hasType(matchtype)))).bind("not_operator"))
+        hasDescendant(unaryOperator(hasOperatorName("!"), hasDescendant(callExpr(hasType(matchtype)).bind("if_not_call_expr"))).bind("not_operator"))
       )
     ).bind("conditional_not_early_exit"), this);
 
     Finder->addMatcher(
       binaryOperator(
         isAssignmentOperator(),
-        hasRHS(hasDescendant(callExpr(hasType(matchtype))))
+        hasRHS(hasDescendant(callExpr(hasType(matchtype)).bind("assign_call_expr")))
     ).bind("early_exit_assignment"), this);
 
     Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
@@ -84,15 +84,18 @@ namespace bitcoin {
 
     Finder->addMatcher(
         callExpr(hasType(matchtype),
-        unless(hasAncestor(binaryOperator())),
-        unless(hasAncestor(declStmt())),
-        unless(hasAncestor(ifStmt()))
+        unless(isExpandedFromMacro("EXIT_OR_DECL")),
+        unless(isExpandedFromMacro("EXIT_OR_ASSIGN")),
+        unless(isExpandedFromMacro("EXIT_OR_IF")),
+        unless(isExpandedFromMacro("EXIT_OR_IF_NOT")),
+        unless(isExpandedFromMacro("MAYBE_EXIT"))
     ).bind("unused_early_exit"), this);
 
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
     static llvm::SmallSet<int64_t, 8> g_decls;
+    static llvm::SmallSet<int64_t, 8> g_calls;
 
     const auto& sm = *Result.SourceManager;
     if (const auto *decl = Result.Nodes.getNodeAs<clang::FunctionDecl>("func_should_early_exit")) {
@@ -114,6 +117,11 @@ namespace bitcoin {
     }
     if (const auto* expr = Result.Nodes.getNodeAs<clang::IfStmt>("conditional_early_exit"))
     {
+        if (const auto* callexpr = Result.Nodes.getNodeAs<clang::CallExpr>("if_call_expr")) {
+            if(!g_calls.insert(callexpr->getID(*Result.Context)).second) {
+                return;
+            }
+        }
         auto beginLoc = expr->getIfLoc();
         auto endLoc = expr->getLParenLoc();
         clang::SourceRange range = {beginLoc, endLoc};
@@ -133,6 +141,11 @@ namespace bitcoin {
     }
     if (const auto* expr = Result.Nodes.getNodeAs<clang::IfStmt>("conditional_not_early_exit"))
     {
+        if (const auto* callexpr = Result.Nodes.getNodeAs<clang::CallExpr>("if_not_call_expr")) {
+            if(!g_calls.insert(callexpr->getID(*Result.Context)).second) {
+                return;
+            }
+        }
         auto beginLoc = expr->getIfLoc();
         auto endLoc = expr->getLParenLoc();
         clang::SourceRange range = {beginLoc, endLoc};
@@ -141,6 +154,11 @@ namespace bitcoin {
     }
     if (const auto* bin = Result.Nodes.getNodeAs<clang::BinaryOperator>("early_exit_assignment"))
     {
+        if (const auto* callexpr = Result.Nodes.getNodeAs<clang::CallExpr>("assign_call_expr")) {
+            if(!g_calls.insert(callexpr->getID(*Result.Context)).second) {
+                return;
+            }
+        }
         const auto user_diag = diag(bin->getBeginLoc(), "Adding Macros");
         user_diag << clang::FixItHint::CreateInsertion(bin->getBeginLoc(), "EXIT_OR_ASSIGN(");
 
@@ -157,18 +175,23 @@ namespace bitcoin {
         if (const auto* var = Result.Nodes.getNodeAs<clang::VarDecl>("vardecl")) {
             const auto user_diag = diag(decl->getBeginLoc(), "Adding Macros");
 
+            clang::SourceRange typerange;
+            if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("callsite")) {
+                if(!g_calls.insert(expr->getID(*Result.Context)).second) {
+                    return;
+                }
+                typerange = {expr->getBeginLoc(), expr->getEndLoc()};
+            }
+
             std::string result = "EXIT_OR_DECL(";
             const auto& ctx = var->getASTContext();
             const auto& opts = ctx.getLangOpts();
-            clang::SourceRange typerange = {var->getBeginLoc(), var->getTypeSpecEndLoc()};
-            result += get_source_text(typerange, sm, opts);
+            clang::SourceRange varrange = {var->getBeginLoc(), var->getTypeSpecEndLoc()};
+            result += get_source_text(varrange, sm, opts);
             result += " ";
             result += var->getQualifiedNameAsString();
             result += ", ";
-            if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("callsite")) {
-                clang::SourceRange typerange = {expr->getBeginLoc(), expr->getEndLoc()};
-                result += get_source_text(typerange, sm, opts);
-            }
+            result += get_source_text(typerange, sm, opts);
             result += ");";
             user_diag << clang::FixItHint::CreateReplacement(decl->getSourceRange(), result);
         }
@@ -176,6 +199,9 @@ namespace bitcoin {
 
     if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("unused_early_exit"))
     {
+        if(!g_calls.insert(expr->getID(*Result.Context)).second) {
+            return;
+        }
         const auto user_diag = diag(expr->getBeginLoc(), "Adding Macros");
         user_diag << clang::FixItHint::CreateInsertion(expr->getBeginLoc(), "MAYBE_EXIT(");
         user_diag << clang::FixItHint::CreateInsertion(expr->getEndLoc(), ")");
