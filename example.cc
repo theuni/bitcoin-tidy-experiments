@@ -45,6 +45,11 @@ void caller3() // should warn for not returning MaybeEarlyExit.
     if (!maybe_early_exit()) {
         return; // should rewrite as "return {};"
     }
+    if (true) {
+        maybe_early_exit();
+    }
+    if (true) maybe_early_exit();
+
     class fooclass{
         void myfunc() { return; }
     };
