@@ -25,6 +25,16 @@ MaybeEarlyExit<> caller()
     return {};
 }
 
+struct Object
+{
+};
+
+MaybeEarlyExit<Object> ObjectCaller()
+{
+    Object object{};
+    return object;
+};
+
 void caller2();
 auto caller2() -> void;
 void caller2() // should warn for not returning MaybeEarlyExit.
@@ -70,4 +80,10 @@ void caller4()
 void caller5()
 {
     maybe_early_exit();
+}
+
+void caller6()
+{
+    Object object{};
+    object = ObjectCaller();
 }
