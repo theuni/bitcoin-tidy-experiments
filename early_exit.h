@@ -137,6 +137,7 @@ EarlyExit BubbleUp(MaybeEarlyExit<T>&& ret)
 #define PASTE2(x, y) PASTE(x, y)
 #endif
 
+#define BUBBLE_UP(func) BubbleUp(func)
 #define MAYBE_EXIT(func) if(auto tmp_int_ret = func; tmp_int_ret.ShouldEarlyExit()) return BubbleUp(std::move(tmp_int_ret));
 #define EXIT_OR_ASSIGN(ret_val, func) if (auto tmp_int_ret = func; !tmp_int_ret.TryMoveOut(ret_val)) return BubbleUp(std::move(tmp_int_ret));
 #define EXIT_OR_IF(func) if(auto tmp_int_ret = func; tmp_int_ret.ShouldEarlyExit()) return BubbleUp(std::move(tmp_int_ret)); else if (*tmp_int_ret)
