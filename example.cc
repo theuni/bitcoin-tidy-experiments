@@ -87,3 +87,8 @@ void caller6()
     Object object{};
     object = ObjectCaller();
 }
+
+int caller7()
+{
+    return maybe_early_exit();
+}
