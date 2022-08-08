@@ -64,11 +64,12 @@ namespace bitcoin {
       )
     ).bind("conditional_not_early_exit"), this);
 
-    Finder->addMatcher(
-      binaryOperator(
+    Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
+      binaryOperation(
         isAssignmentOperator(),
-        hasRHS(hasDescendant(callExpr(hasType(matchtype)).bind("assign_call_expr")))
-    ).bind("early_exit_assignment"), this);
+        hasRHS(callExpr(hasType(matchtype)).bind("assign_call_expr")),
+        hasLHS(expr().bind("lhs"))
+    ).bind("early_exit_assignment")), this);
 
     Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
       declStmt(
@@ -152,6 +153,26 @@ namespace bitcoin {
         const auto user_diag = diag(beginLoc, "Adding Macros");
         user_diag << clang::FixItHint::CreateReplacement(range, "EXIT_OR_IF_NOT(");
     }
+
+    if (const auto* bin = Result.Nodes.getNodeAs<clang::CXXOperatorCallExpr>("early_exit_assignment"))
+    {
+        // TODO: de-dupe with binaryOperator
+        if (const auto* callexpr = Result.Nodes.getNodeAs<clang::CallExpr>("assign_call_expr")) {
+            if(!g_calls.insert(callexpr->getID(*Result.Context)).second) {
+                return;
+            }
+        }
+        const auto user_diag = diag(bin->getBeginLoc(), "Adding Macros");
+        user_diag << clang::FixItHint::CreateInsertion(bin->getBeginLoc(), "EXIT_OR_ASSIGN(");
+
+        const auto& beginLoc = bin->getOperatorLoc();
+        const auto& endLoc = bin->getExprLoc();
+        clang::SourceRange range = {beginLoc, endLoc};
+        user_diag << clang::FixItHint::CreateReplacement(range, ",");
+
+        user_diag << clang::FixItHint::CreateInsertion(bin->getEndLoc(), ")");
+    }
+
     if (const auto* bin = Result.Nodes.getNodeAs<clang::BinaryOperator>("early_exit_assignment"))
     {
         if (const auto* callexpr = Result.Nodes.getNodeAs<clang::CallExpr>("assign_call_expr")) {
