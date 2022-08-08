@@ -83,15 +83,20 @@ namespace bitcoin {
       ))
     .bind("declstmt")), this);
 
-    Finder->addMatcher(
+    Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
         callExpr(hasType(matchtype),
+        unless(hasParent(returnStmt())),
         unless(isExpandedFromMacro("EXIT_OR_DECL")),
         unless(isExpandedFromMacro("EXIT_OR_ASSIGN")),
         unless(isExpandedFromMacro("EXIT_OR_IF")),
         unless(isExpandedFromMacro("EXIT_OR_IF_NOT")),
-        unless(isExpandedFromMacro("MAYBE_EXIT"))
-    ).bind("unused_early_exit"), this);
+        unless(isExpandedFromMacro("MAYBE_EXIT")),
+        unless(isExpandedFromMacro("BUBBLE_UP"))
+    ).bind("unused_early_exit")), this);
 
+    Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
+        returnStmt(has(callExpr(hasType(matchtype)).bind("bubble_up_expr"))
+    )), this);
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
@@ -225,6 +230,15 @@ namespace bitcoin {
         }
         const auto user_diag = diag(expr->getBeginLoc(), "Adding Macros");
         user_diag << clang::FixItHint::CreateInsertion(expr->getBeginLoc(), "MAYBE_EXIT(");
+        user_diag << clang::FixItHint::CreateInsertion(expr->getEndLoc(), ")");
+    }
+
+    if (const auto* expr = Result.Nodes.getNodeAs<clang::CallExpr>("bubble_up_expr")) {
+        if(!g_calls.insert(expr->getID(*Result.Context)).second) {
+            return;
+        }
+        const auto user_diag = diag(expr->getBeginLoc(), "Adding Macros");
+        user_diag << clang::FixItHint::CreateInsertion(expr->getBeginLoc(), "BUBBLE_UP(");
         user_diag << clang::FixItHint::CreateInsertion(expr->getEndLoc(), ")");
     }
   }
