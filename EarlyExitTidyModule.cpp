@@ -78,6 +78,11 @@ namespace bitcoin {
         unless(isExpandedFromMacro("EXIT_OR_ASSIGN")),
         unless(isExpandedFromMacro("EXIT_OR_IF")),
         unless(isExpandedFromMacro("EXIT_OR_IF_NOT")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_DECL")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_ASSIGN")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_IF")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_IF_NOT")),
+        unless(isExpandedFromMacro("NOOP_MAYBE_EXIT")),
         has(varDecl(
           hasInitializer(callExpr(hasType(matchtype)).bind("callsite"))).bind("vardecl")
       ))
@@ -91,12 +96,18 @@ namespace bitcoin {
         unless(isExpandedFromMacro("EXIT_OR_IF")),
         unless(isExpandedFromMacro("EXIT_OR_IF_NOT")),
         unless(isExpandedFromMacro("MAYBE_EXIT")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_DECL")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_ASSIGN")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_IF")),
+        unless(isExpandedFromMacro("NOOP_EXIT_OR_IF_NOT")),
+        unless(isExpandedFromMacro("NOOP_MAYBE_EXIT")),
         unless(isExpandedFromMacro("BUBBLE_UP"))
     ).bind("unused_early_exit")), this);
 
     Finder->addMatcher(traverse(clang::TK_IgnoreUnlessSpelledInSource,
         returnStmt(has(callExpr(hasType(matchtype)).bind("bubble_up_expr"))
     )), this);
+
   }
 
   void PropagateEarlyExitCheck::check(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
