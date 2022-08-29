@@ -28,7 +28,7 @@ namespace bitcoin {
     auto matchtype = qualType(hasDeclaration(classTemplateSpecializationDecl(hasName("MaybeEarlyExit"))));
     Finder->addMatcher(
      callExpr(
-       hasType(matchtype),
+       anyOf(hasType(matchtype),callee(functionDecl(hasName("ShutdownRequested")))),
        forCallable(functionDecl(
          unless(isMain()),
          unless(returns(matchtype)),
