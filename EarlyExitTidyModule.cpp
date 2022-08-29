@@ -24,11 +24,10 @@ namespace bitcoin {
 
   void PropagateEarlyExitCheck::registerMatchers(clang::ast_matchers::MatchFinder *Finder) {
   using namespace clang::ast_matchers;
-
     auto matchtype = qualType(hasDeclaration(classTemplateSpecializationDecl(hasName("MaybeEarlyExit"))));
     Finder->addMatcher(
      callExpr(
-       anyOf(hasType(matchtype),callee(functionDecl(hasName("ShutdownRequested")))),
+       anyOf(hasType(matchtype),callee(functionDecl(hasName("ShutdownRequested"))),callee(functionDecl(hasName("StartShutdown")))),
        forCallable(functionDecl(
          unless(isMain()),
          unless(returns(matchtype)),
