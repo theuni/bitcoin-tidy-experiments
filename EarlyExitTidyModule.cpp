@@ -45,7 +45,8 @@ namespace bitcoin {
        functionDecl(
         hasDescendant(
          callExpr(
-          hasType(matchtype))))),
+          anyOf(hasType(matchtype),callee(functionDecl(hasName("ShutdownRequested"))),callee(functionDecl(hasName("StartShutdown"))))
+         )))),
       unless(
        has(
         expr()))).bind("naked_return"), this);
