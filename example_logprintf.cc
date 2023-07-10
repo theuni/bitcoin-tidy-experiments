@@ -5,12 +5,21 @@
 // Warn about any use of LogPrintf that does not end with a newline.
 #include <string>
 
+enum LogFlags {
+    NONE
+};
+
+enum Level {
+    None
+};
+
 template <typename... Args>
-static inline void LogPrintf_(const std::string& logging_function, const std::string& source_file, const int source_line, const char* fmt, const Args&... args)
+static inline void LogPrintf_(const std::string& logging_function, const std::string& source_file, const int source_line, const LogFlags flag, const Level level, const char* fmt, const Args&... args)
 {
 }
 
-#define LogPrintf(...) LogPrintf_(__func__, __FILE__, __LINE__, __VA_ARGS__)
+#define LogPrintLevel_(category, level, ...) LogPrintf_(__func__, __FILE__, __LINE__, category, level, __VA_ARGS__)
+#define LogPrintf(...) LogPrintLevel_(LogFlags::NONE, Level::None, __VA_ARGS__)
 
 // Use a macro instead of a function for conditional logging to prevent
 // evaluating arguments when logging for the category is not enabled.
