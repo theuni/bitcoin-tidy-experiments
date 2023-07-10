@@ -36,7 +36,7 @@ void LogPrintfCheck::registerMatchers(clang::ast_matchers::MatchFinder *finder)
     finder->addMatcher(
       callExpr(
         callee(functionDecl(hasName("LogPrintf_"))),
-        hasArgument(3, stringLiteral(unterminated()).bind("logstring"))
+        hasArgument(5, stringLiteral(unterminated()).bind("logstring"))
       ).bind("logprintf"),
     this);
 }
